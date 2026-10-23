@@ -62,12 +62,43 @@
           },
           {
             "group": "Showcase",
-            "pages": []
+            "pages": [
+              "critics-vs-crowds"
+            ]
           }
         ]
       },
       {
-        "tab": "API reference"
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "Movies",
+            "pages": [
+              "api-reference/list-movies",
+              "api-reference/get-movie",
+              "api-reference/get-movie-credits"
+            ]
+          },
+          {
+            "group": "People",
+            "pages": [
+              "api-reference/get-person"
+            ]
+          },
+          {
+            "group": "Reviews",
+            "pages": [
+              "api-reference/list-reviews",
+              "api-reference/create-review"
+            ]
+          },
+          {
+            "group": "Rankings",
+            "pages": [
+              "api-reference/get-rankings"
+            ]
+          }
+        ]
       }
     ]
   }
