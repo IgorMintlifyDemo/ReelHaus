@@ -40,27 +40,29 @@
     "openapi": "openapi.yaml"
   },
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "icon": "book-open-cover",
-          "href": "https://mintlify.com/docs"
-        },
-        {
-          "anchor": "Blog",
-          "icon": "newspaper",
-          "href": "https://mintlify.com/blog"
-        }
-      ]
-    },
-    "pages": [
+    "tabs": [
       {
-        "group": "Getting Started",
+        "tab": "Guides",
         "pages": [
-          "index",
-          "quickstart"
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Working with the API",
+            "pages": []
+          },
+          {
+            "group": "Showcase",
+            "pages": []
+          }
         ]
+      },
+      {
+        "tab": "API reference"
       }
     ]
   }
