@@ -1,0 +1,31 @@
+---
+title: "Authentication"
+description: "Authenticate your requests with an API key."
+icon: "key"
+---
+
+Reelhaus uses API keys to authenticate requests. Send your key as a bearer token in the `Authorization` header of every request.
+
+```bash
+curl "https://api.reelhaus.example/v1/movies" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+<Warning>
+Keep your API key secret. Don't commit it to source control or use it in client-side code where users can see it.
+</Warning>
+
+## Errors
+
+If the key is missing or invalid, the API returns `401 Unauthorized`:
+
+```json
+{
+  "code": "unauthorized",
+  "message": "The API key is missing or invalid."
+}
+```
+
+<Tip>
+Store your key in an environment variable such as `REELHAUS_API_KEY` and read it at runtime.
+</Tip>

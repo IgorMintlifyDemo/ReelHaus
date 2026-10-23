@@ -1,0 +1,63 @@
+---
+title: "Critics vs. Crowds"
+description: "Compare how films rank with reviewers and at the box office, side by side."
+icon: "scale-balanced"
+---
+
+Do critics and audiences agree with the box office? The `GET /rankings` endpoint answers that in a single request. It returns two ranked lists for the same films, one by average review rating and one by worldwide gross, and tells you where each film lands in the other list.
+
+## 2008: the critics vs. the crowds
+
+<Columns cols={2}>
+  <Card title="Top rated" icon="star">
+    | # | Film | Rating | Box office rank |
+    | --- | --- | --- | --- |
+    | 1 | The Dark Knight | 9.0 | #1 |
+    | 2 | WALL-E | 8.4 | #9 |
+    | 3 | Slumdog Millionaire | 8.0 | #16 |
+    | 4 | In Bruges | 7.9 | **#118** |
+    | 5 | Iron Man | 7.9 | #8 |
+  </Card>
+  <Card title="Top box office" icon="ticket">
+    | # | Film | Worldwide | Rating rank |
+    | --- | --- | --- | --- |
+    | 1 | The Dark Knight | $1.01B | #1 |
+    | 2 | Indiana Jones and the Kingdom of the Crystal Skull | $790M | **#14** |
+    | 3 | Kung Fu Panda | $632M | #7 |
+    | 4 | Hancock | $629M | **#22** |
+    | 5 | Mamma Mia! | $611M | **#19** |
+  </Card>
+</Columns>
+
+Bold ranks mark a big gap between the two lists. *In Bruges* was a critic favorite that barely registered at the box office, while *Hancock* made a fortune that reviewers didn't share.
+
+<Note>
+Ratings and cross-list ranks are example data from the fictional Reelhaus catalog.
+</Note>
+
+## Get the rankings
+
+```bash
+curl "https://api.reelhaus.example/v1/rankings?year=2008&limit=5" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `year` | All years | Only rank films released in this year. |
+| `genre` | All genres | Only rank films in this genre. |
+| `min_reviews` | `50` | Leave out films with fewer reviews, so a handful of ratings can't top the list. |
+| `limit` | `10` | Films per list, up to 50. |
+
+## Reading the response
+
+The response has two arrays, `by_reviews` and `by_box_office`. Each entry includes:
+
+- `rank`: the film's position in that list
+- `movie`: the film's ID, title, and release year
+- `average_rating` and `worldwide_gross_usd`: both scores, whichever list it's in
+- `rank_in_other_list`: where the film places in the other ranking, or `null` if it doesn't qualify there
+
+<Tip>
+To find the biggest disagreements, sort entries by the difference between `rank` and `rank_in_other_list`.
+</Tip>
