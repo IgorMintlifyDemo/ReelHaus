@@ -1,0 +1,67 @@
+{
+  "theme": "mint",
+  "name": "Reelhaus",
+  "colors": {
+    "primary": "#B91C1C",
+    "light": "#F87171",
+    "dark": "#7F1D1D"
+  },
+  "favicon": "/favicon.svg",
+  "navbar": {
+    "links": [
+      {
+        "href": "https://github.com/IgorMintlifyDemo/ReelHaus",
+        "label": "GitHub"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get an API key",
+      "href": "/authentication"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/IgorMintlifyDemo/ReelHaus"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor"
+    ],
+    "display": "header"
+  },
+  "description": "Developer documentation for the Reelhaus movie database API.",
+  "api": {
+    "openapi": "openapi.yaml"
+  },
+  "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Documentation",
+          "icon": "book-open-cover",
+          "href": "https://mintlify.com/docs"
+        },
+        {
+          "anchor": "Blog",
+          "icon": "newspaper",
+          "href": "https://mintlify.com/blog"
+        }
+      ]
+    },
+    "pages": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      }
+    ]
+  }
+}
