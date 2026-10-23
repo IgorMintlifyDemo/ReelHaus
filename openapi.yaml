@@ -1,0 +1,511 @@
+openapi: 3.0.3
+info:
+  title: Reelhaus API
+  version: 1.0.0
+  description: >
+    Reelhaus is a movie database API. Search films, look up cast and crew,
+    and read or post audience reviews.
+servers:
+  - url: https://api.reelhaus.example/v1
+security:
+  - ApiKeyAuth: []
+tags:
+  - name: Movies
+    description: Search and browse films.
+  - name: People
+    description: Actors, directors, and other crew.
+  - name: Reviews
+    description: Audience ratings and reviews.
+  - name: Rankings
+    description: Leaderboards that compare how films perform with audiences and at the box office.
+
+paths:
+  /movies:
+    get:
+      tags: [Movies]
+      summary: Search movies
+      description: Returns a paginated list of movies, optionally filtered by title, genre, or release year.
+      operationId: listMovies
+      parameters:
+        - name: query
+          in: query
+          description: Text to match against movie titles.
+          schema:
+            type: string
+          example: heat
+        - name: genre
+          in: query
+          description: Only return movies in this genre.
+          schema:
+            $ref: '#/components/schemas/Genre'
+        - name: year
+          in: query
+          description: Only return movies released in this year.
+          schema:
+            type: integer
+          example: 1995
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: A page of movies.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MovieSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /movies/{movieId}:
+    get:
+      tags: [Movies]
+      summary: Get a movie
+      description: Returns full details for a single movie.
+      operationId: getMovie
+      parameters:
+        - $ref: '#/components/parameters/MovieId'
+      responses:
+        '200':
+          description: The movie.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /movies/{movieId}/credits:
+    get:
+      tags: [Movies]
+      summary: Get a movie's cast and crew
+      operationId: getMovieCredits
+      parameters:
+        - $ref: '#/components/parameters/MovieId'
+      responses:
+        '200':
+          description: Cast and crew for the movie.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cast:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CastCredit'
+                  crew:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CrewCredit'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /people/{personId}:
+    get:
+      tags: [People]
+      summary: Get a person
+      description: Returns a person's profile and the movies they've worked on.
+      operationId: getPerson
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: per_8f2k1
+      responses:
+        '200':
+          description: The person.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /movies/{movieId}/reviews:
+    get:
+      tags: [Reviews]
+      summary: List reviews for a movie
+      operationId: listReviews
+      parameters:
+        - $ref: '#/components/parameters/MovieId'
+        - name: sort
+          in: query
+          description: How to order the reviews.
+          schema:
+            type: string
+            enum: [newest, highest, lowest]
+            default: newest
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: A page of reviews.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Reviews]
+      summary: Post a review
+      description: Adds a rating and optional written review to a movie.
+      operationId: createReview
+      parameters:
+        - $ref: '#/components/parameters/MovieId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  example: 9
+                body:
+                  type: string
+                  maxLength: 5000
+                  example: The bank heist sequence alone is worth the ticket.
+                contains_spoilers:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: The review was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /rankings:
+    get:
+      tags: [Rankings]
+      summary: Compare rankings by reviews and box office
+      description: >
+        Returns two ranked lists for the same set of films, side by side: one
+        ordered by average review rating and one ordered by worldwide box office
+        gross. Each entry includes the film's position in the other list, so you
+        can spot critic darlings that flopped and blockbusters audiences didn't love.
+      operationId: getRankings
+      parameters:
+        - name: year
+          in: query
+          description: Only rank movies released in this year. Omit to rank across all years.
+          schema:
+            type: integer
+          example: 2008
+        - name: genre
+          in: query
+          description: Only rank movies in this genre.
+          schema:
+            $ref: '#/components/schemas/Genre'
+        - name: min_reviews
+          in: query
+          description: Leave out movies with fewer reviews than this, so a handful of ratings can't top the list.
+          schema:
+            type: integer
+            minimum: 0
+            default: 50
+        - name: limit
+          in: query
+          description: How many films to include in each list.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Both rankings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  by_reviews:
+                    type: array
+                    description: Films ordered by average review rating, highest first.
+                    items:
+                      $ref: '#/components/schemas/RankedMovie'
+                  by_box_office:
+                    type: array
+                    description: Films ordered by worldwide gross, highest first.
+                    items:
+                      $ref: '#/components/schemas/RankedMovie'
+                  generated_at:
+                    type: string
+                    format: date-time
+              example:
+                by_reviews:
+                  - rank: 1
+                    movie: { id: mov_7tk2p, title: The Dark Knight, release_year: 2008 }
+                    average_rating: 9.0
+                    worldwide_gross_usd: 1006000000
+                    rank_in_other_list: 1
+                  - rank: 2
+                    movie: { id: mov_w4l1e, title: WALL-E, release_year: 2008 }
+                    average_rating: 8.4
+                    worldwide_gross_usd: 521000000
+                    rank_in_other_list: 6
+                by_box_office:
+                  - rank: 1
+                    movie: { id: mov_7tk2p, title: The Dark Knight, release_year: 2008 }
+                    average_rating: 9.0
+                    worldwide_gross_usd: 1006000000
+                    rank_in_other_list: 1
+                  - rank: 2
+                    movie: { id: mov_ij4kc, title: Indiana Jones and the Kingdom of the Crystal Skull, release_year: 2008 }
+                    average_rating: 6.2
+                    worldwide_gross_usd: 790000000
+                    rank_in_other_list: 14
+                generated_at: '2026-10-22T12:00:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: Send your API key as a bearer token in the Authorization header.
+
+  parameters:
+    MovieId:
+      name: movieId
+      in: path
+      required: true
+      description: The movie's unique ID.
+      schema:
+        type: string
+      example: mov_3xq9z
+    Page:
+      name: page
+      in: query
+      description: Page number, starting at 1.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: per_page
+      in: query
+      description: Results per page.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    BadRequest:
+      description: The request was invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: The API key is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: The requested resource doesn't exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Genre:
+      type: string
+      enum: [action, comedy, drama, horror, sci_fi, thriller, animation, documentary, romance]
+
+    MovieSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mov_3xq9z
+        title:
+          type: string
+          example: Heat
+        release_year:
+          type: integer
+          example: 1995
+        genres:
+          type: array
+          items:
+            $ref: '#/components/schemas/Genre'
+        average_rating:
+          type: number
+          format: float
+          example: 8.3
+        poster_url:
+          type: string
+          format: uri
+
+    Movie:
+      allOf:
+        - $ref: '#/components/schemas/MovieSummary'
+        - type: object
+          properties:
+            synopsis:
+              type: string
+            runtime_minutes:
+              type: integer
+              example: 170
+            age_rating:
+              type: string
+              example: R
+            review_count:
+              type: integer
+              example: 1284
+            box_office:
+              $ref: '#/components/schemas/BoxOffice'
+
+    BoxOffice:
+      type: object
+      properties:
+        budget_usd:
+          type: integer
+          example: 60000000
+        domestic_gross_usd:
+          type: integer
+          example: 67400000
+        worldwide_gross_usd:
+          type: integer
+          example: 187400000
+
+    RankedMovie:
+      type: object
+      properties:
+        rank:
+          type: integer
+          description: Position in this list, starting at 1.
+        movie:
+          $ref: '#/components/schemas/MovieSummary'
+        average_rating:
+          type: number
+          format: float
+        worldwide_gross_usd:
+          type: integer
+        rank_in_other_list:
+          type: integer
+          nullable: true
+          description: >
+            Where this film places in the other ranking. Null if it doesn't
+            qualify there, for example because it has too few reviews.
+
+    CastCredit:
+      type: object
+      properties:
+        person_id:
+          type: string
+        name:
+          type: string
+        character:
+          type: string
+        billing_order:
+          type: integer
+
+    CrewCredit:
+      type: object
+      properties:
+        person_id:
+          type: string
+        name:
+          type: string
+        job:
+          type: string
+          example: Director
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: string
+          example: per_8f2k1
+        name:
+          type: string
+        biography:
+          type: string
+        known_for:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovieSummary'
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: string
+          example: rev_k29dm
+        movie_id:
+          type: string
+        author:
+          type: string
+          example: filmfan42
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 10
+        body:
+          type: string
+        contains_spoilers:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        per_page:
+          type: integer
+        total_results:
+          type: integer
+        total_pages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: not_found
+        message:
+          type: string
+          example: No movie exists with that ID.
