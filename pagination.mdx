@@ -1,0 +1,56 @@
+---
+title: "Pagination"
+description: "Page through large result sets."
+icon: "list-ol"
+---
+
+Endpoints that return lists, such as `GET /movies` and `GET /movies/{movieId}/reviews`, split results into pages.
+
+## Parameters
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `page` | `1` | The page to return, starting at 1. |
+| `per_page` | `20` | Results per page, up to 100. |
+
+## Response
+
+Every list response includes a `pagination` object:
+
+```json
+"pagination": {
+  "page": 2,
+  "per_page": 20,
+  "total_results": 134,
+  "total_pages": 7
+}
+```
+
+## Fetch every page
+
+Keep requesting the next page until `page` equals `total_pages`.
+
+```javascript
+async function getAllMovies(genre) {
+  const movies = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const res = await fetch(
+      `https://api.reelhaus.example/v1/movies?genre=${genre}&page=${page}&per_page=100`,
+      { headers: { Authorization: `Bearer ${process.env.REELHAUS_API_KEY}` } }
+    );
+    const body = await res.json();
+    movies.push(...body.data);
+    totalPages = body.pagination.total_pages;
+    page++;
+  } while (page <= totalPages);
+
+  return movies;
+}
+```
+
+<Tip>
+Use `per_page=100` when fetching everything. It means fewer requests.
+</Tip>

@@ -1,0 +1,40 @@
+---
+title: "Searching movies"
+description: "Find films by title, genre, or release year."
+icon: "magnifying-glass"
+---
+
+Use `GET /movies` to search the catalog. Every filter is optional, and you can combine them.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `query` | string | Text to match against movie titles. |
+| `genre` | string | One of `action`, `comedy`, `drama`, `horror`, `sci_fi`, `thriller`, `animation`, `documentary`, `romance`. |
+| `year` | integer | Only movies released in this year. |
+
+## Examples
+
+<Tabs>
+  <Tab title="By title">
+    ```bash
+    curl "https://api.reelhaus.example/v1/movies?query=alien" \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="By genre and year">
+    ```bash
+    curl "https://api.reelhaus.example/v1/movies?genre=sci_fi&year=1982" \
+      -H "Authorization: Bearer YOUR_API_KEY"
+    ```
+  </Tab>
+</Tabs>
+
+Results come back in pages of 20 by default. See [Pagination](/pagination) to get more.
+
+## Get one movie
+
+Once you have a movie's `id`, call `GET /movies/{movieId}` for full details: synopsis, runtime, age rating, review count, and box office figures. For the cast and crew, call `GET /movies/{movieId}/credits`.
+
+<Tip>
+Search results include `average_rating`, so you can sort or highlight top-rated matches without extra requests.
+</Tip>

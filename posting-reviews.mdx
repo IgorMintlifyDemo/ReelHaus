@@ -1,0 +1,38 @@
+---
+title: "Posting reviews"
+description: "Add ratings and reviews to a movie."
+icon: "star"
+---
+
+Use `POST /movies/{movieId}/reviews` to add a rating and an optional written review.
+
+## Request body
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `rating` | integer | Yes | A score from 1 to 10. |
+| `body` | string | No | The written review, up to 5,000 characters. |
+| `contains_spoilers` | boolean | No | Set to `true` to hide the review behind a spoiler warning. Defaults to `false`. |
+
+## Example
+
+```bash
+curl -X POST "https://api.reelhaus.example/v1/movies/mov_3xq9z/reviews" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "rating": 9,
+    "body": "The bank heist sequence alone is worth the ticket.",
+    "contains_spoilers": false
+  }'
+```
+
+A successful request returns `201 Created` with the new review.
+
+## Reading reviews
+
+Call `GET /movies/{movieId}/reviews` to list a movie's reviews. Use `sort` to order them by `newest`, `highest`, or `lowest`. Results are [paginated](/pagination).
+
+<Warning>
+Ratings outside 1 to 10 return `400 Bad Request`.
+</Warning>

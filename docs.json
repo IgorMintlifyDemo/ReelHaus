@@ -48,12 +48,17 @@
             "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart"
+              "quickstart",
+              "authentication"
             ]
           },
           {
             "group": "Working with the API",
-            "pages": []
+            "pages": [
+              "searching-movies",
+              "pagination",
+              "posting-reviews"
+            ]
           },
           {
             "group": "Showcase",
